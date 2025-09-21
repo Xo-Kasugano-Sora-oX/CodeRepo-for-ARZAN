@@ -35,7 +35,8 @@ public class PlayerController : MonoBehaviour
     public float checkRadius = 0.2f;
     [Header("Attack Settings")]
     private bool isAttacking;
-    private int combocounter;
+    public int combocounter;
+    public float combocounte;
 
     void Start()
     {
@@ -67,9 +68,17 @@ public class PlayerController : MonoBehaviour
         if (!isGrounded)
         {
             PAnim.SetBool("isJumping", isJumping = true);
+            if (JumpCounter !> 0)
+            {
+                JumpCounter -= 1;
+            }
         }
         else
         {
+            if (JumpCounter <= 0)
+            {
+                JumpCounter = JumpCount;
+            }
             PAnim.SetBool("isJumping", isJumping = false);
             if (rb.velocity.x > 0 || rb.velocity.x < 0)
             {
@@ -81,14 +90,19 @@ public class PlayerController : MonoBehaviour
             }
         }
         // 跳跃
-        if (Input.GetKeyDown(KeyCode.J) && isGrounded)
+        if (Input.GetKeyDown(KeyCode.J) && JumpCounter!=0)
         {
             rb.velocity = new Vector2(rb.velocity.x, JumpForce * 2);
             JumpCounter -= 1f;
         }
         //地面检查
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, checkRadius, groundLayer);//(监测点（父）， 半径 ， 图层)
-
+        combocounte = 5;
+        combocounte -= Time.deltaTime;
+        if (combocounter > 3)
+        {
+            combocounter = 0;
+        }
         AnimatoerControllers();
         InputChecker();
     }
@@ -129,10 +143,14 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.H))
         {
-            isAttacking = true;
-            
+            if (isGrounded)
+            {
+                isAttacking = true;
+            }
+                combocounter += 1;
         }
         xInput = Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f ? Input.GetAxis("Horizontal") : 0f;
     }
+    public bool CanJump;
 
 }
