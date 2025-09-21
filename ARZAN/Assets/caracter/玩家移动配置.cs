@@ -28,15 +28,12 @@ public class PlayerController : MonoBehaviour
     public LayerMask groundLayer;
     public Transform groundCheck;
     public float checkRadius = 0.2f;
-        [Header("Dash Settings")]
-    public float dashForce = 25f;
-    public float dashDuration = 0.2f;
-    public float dashCooldown = 1f;
-    public LayerMask dashStopLayers;
-    public Image cooldownImage;
+    [Header("Attack Settings")]
+    private bool isAttacking;
     private Animator anim;
-    private float lastDashTime = -10f;
-    private bool isDashing;
+
+
+    
     void Start()
     {
         PAnim = GetComponentInChildren<Animator>();
@@ -80,105 +77,42 @@ public class PlayerController : MonoBehaviour
         }
 
         // 原有速度检测逻辑
-        if (rb.velocity.x > 5f)
+
+
+        // 新增跳跃状态检测
+        if (!isGrounded)
         {
-            PAnim.SetBool("isRushing", isRushing = true);
+            PAnim.SetBool("isJumping", isJumping = true);
         }
         else
         {
-            PAnim.SetBool("isRushing", isRushing = false);
-
-            // 新增跳跃状态检测
-            if (!isGrounded)
+            PAnim.SetBool("isJumping", isJumping = false);
+            if (rb.velocity.x > 0 || rb.velocity.x < 0)
             {
-                PAnim.SetBool("isJumping", isJumping = true);
+                PAnim.SetBool("IsMoving", IsMoving = true);
             }
             else
             {
-                PAnim.SetBool("isJumping", isJumping = false);
-                // 原有移动状态检测...
+                PAnim.SetBool("IsMoving", IsMoving = false);
             }
         }
 
 
-        // 跳跃缓冲
-        if (Input.GetKeyDown(KeyCode.J))
-        {
-            jumpBufferCounter = jumpBufferTime;
-        }
-        else
-        {
-            jumpBufferCounter -= Time.deltaTime;
-        }
 
-        if (jumpBufferCounter > 0 && isGrounded)
+
+        // 跳跃缓冲
+        if (Input.GetKeyDown(KeyCode.J) && isGrounded)
         {
-            rb.AddForce(Vector2.up * JumpForce, ForceMode2D.Impulse);
-            jumpBufferCounter = 0;
+            rb.velocity = new Vector2(rb.velocity.x, JumpForce * 2);
         }
         //地面检查（下一步）
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, checkRadius, groundLayer);//(监测点（父）， 半径 ， 图层)
 
-        if (Input.GetKeyDown(KeyCode.J) && isGrounded)
-        {
-            rb.AddForce(Vector2.up * JumpForce, ForceMode2D.Impulse);
-        }
         //冲刺！！！！！！
-        UpdateCooldownUI();
-        
-        if(Input.GetKeyDown(KeyCode.K) && CanDash()) {
-            StartCoroutine(PerformDash());
-        }
+
     }
-    
-    bool CanDash() {
-        return Time.time > lastDashTime + dashCooldown && !isDashing;
-    }
-
-    IEnumerator PerformDash()
-    {
-        if (rb == null || PAnim == null)
-        {
-            Debug.LogError("Required components are not assigned!");
-            yield break;
-        }
-
-        isDashing = true;
-        lastDashTime = Time.time;
-        float originalGravity = rb.gravityScale;
-        rb.gravityScale = 0;
-
-        anim.SetBool("isDashing", isDashing = true);
-
-        int direction = transform.localScale.x > 0 ? 1 : -1;
-        rb.velocity = Vector2.zero;
-        rb.AddForce(new Vector2(direction * dashForce, 0),
-                   ForceMode2D.Impulse);
-
-        float elapsed = 0f;
-        while (elapsed < dashDuration)
-        {
-            if (Physics2D.OverlapCircle(transform.position, 0.5f, dashStopLayers))
-            {
-                break;
-            }
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        rb.gravityScale = originalGravity;
-        rb.velocity = new Vector2(rb.velocity.x * 0.5f, rb.velocity.y);
-        anim.SetBool("isDashing", false);
-        isDashing = false;
-    }
-    //UI
-    void UpdateCooldownUI() {
-        if(cooldownImage != null) {
-            float cooldownProgress = Mathf.Clamp01(
-                (Time.time - lastDashTime) / dashCooldown);
-            cooldownImage.fillAmount = 1 - cooldownProgress;
-        }
-    }
+    private float RushTime = 2f;
+    private float RushTimer;
     
     private bool isGrounded;//布尔值判断真假
     //实现换方向时人物翻转
