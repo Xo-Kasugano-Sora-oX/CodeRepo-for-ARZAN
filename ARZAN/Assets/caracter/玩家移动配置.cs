@@ -9,19 +9,11 @@ using UnityEngine.UI;
 using Image = UnityEngine.UI.Image;
 using UnityEngine.Rendering.Universal;
 using TMPro;
-public class PlayerController : MonoBehaviour
+using System.Numerics;
+public class PlayerController : Entity
 
 {
-    [Header("test1")]
-    public Rigidbody2D rb;
-    [Header("test anim")]
-    [SerializeField] private Animator PAnim;
-    [SerializeField] private bool IsMoving;
-    [SerializeField] private bool isDashing;
-    [SerializeField] private bool isJumping;
-
     [Header("Move control")]
-    private bool FacingRight = true;
     private float xInput;
     public float MoveSpeedPlayer = 4f;
     public float acceleration = 10f;
@@ -30,27 +22,17 @@ public class PlayerController : MonoBehaviour
     public float JumpForce = 8f;
     public float JumpCount = 1f;
     public float JumpCounter;
-    public LayerMask groundLayer;
-    public Transform groundCheck;
-    public float checkRadius = 0.2f;
     [Header("Attack Settings")]
-    private bool isAttacking;
     public int combocounter;
     public float combocounte;
-
-    void Start()
+    
+    protected override void Start()
     {
-        PAnim = GetComponentInChildren<Animator>();
+        base.Start();
     }
-    void FixedUpdate()
+    protected override void Update()
     {
-        if (Mathf.Abs(rb.velocity.x) < maxSpeed)
-        {
-            rb.AddForce(new Vector2(xInput * acceleration, 0), ForceMode2D.Force);
-        }
-    }
-    void Update()
-    {
+        base.Update();
         //检测是否向右移动
         float move = Input.GetAxis("Horizontal");
         if (move > 0 && !FacingRight)
@@ -62,13 +44,14 @@ public class PlayerController : MonoBehaviour
             Flip();
         }
         //水平移动
-        rb.velocity = new Vector2(MoveSpeedPlayer * 2 * xInput, rb.velocity.y);
+        rb.velocity = new UnityEngine.Vector2(MoveSpeedPlayer * 2 * xInput, rb.velocity.y);
+        //冲刺/闪现
 
         // 新增跳跃状态检测
         if (!isGrounded)
         {
-            PAnim.SetBool("isJumping", isJumping = true);
-            if (JumpCounter !> 0)
+            anim.SetBool("isJumping", isJumping = true);
+            if (JumpCounter! > 0)
             {
                 JumpCounter -= 1;
             }
@@ -79,78 +62,30 @@ public class PlayerController : MonoBehaviour
             {
                 JumpCounter = JumpCount;
             }
-            PAnim.SetBool("isJumping", isJumping = false);
+            anim.SetBool("isJumping", isJumping = false);
             if (rb.velocity.x > 0 || rb.velocity.x < 0)
             {
-                PAnim.SetBool("IsMoving", IsMoving = true);
+                anim.SetBool("IsMoving", IsMoving = true);
             }
             else
             {
-                PAnim.SetBool("IsMoving", IsMoving = false);
+                anim.SetBool("IsMoving", IsMoving = false);
             }
         }
         // 跳跃
         if (Input.GetKeyDown(KeyCode.J) && JumpCounter!=0)
         {
-            rb.velocity = new Vector2(rb.velocity.x, JumpForce * 2);
+            rb.velocity = new UnityEngine.Vector2(rb.velocity.x, JumpForce * 2);
             JumpCounter -= 1f;
         }
         //地面检查
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, checkRadius, groundLayer);//(监测点（父）， 半径 ， 图层)
-        combocounte = 5;
-        combocounte -= Time.deltaTime;
-        if (combocounter > 3)
-        {
-            combocounter = 0;
-        }
         AnimatoerControllers();
         InputChecker();
     }
-    private float RushTime = 2f;
-    private float RushTimer;
-
-    private bool isGrounded;//布尔值判断真假
-    //实现换方向时人物翻转
-    void Flip()
-    {
-        FacingRight = !FacingRight;
-        Vector3 scale = transform.localScale;
-        scale.x *= -1;
-        transform.localScale = scale;
-    }
-    //animations
-
-    //SKILL 1 冲刺
-    [Header("DASH INFO")]
-    [SerializeField] private float DashForce = 0.4f;
-    [SerializeField] private float DashTime = 1f;
-    [SerializeField] private float DashCoolDown = 0.5f;
-    [SerializeField] private float Dashtimer = 5f;
-
-
-    private void AnimatoerControllers()
-    {
-        PAnim.SetBool("isAttacking", isAttacking);
-        PAnim.SetInteger("combocounter", combocounter);
-        PAnim.SetBool("isGrunded", isGrounded);
-    }
-    //atack
     public void AttackOver()
     {
         isAttacking = false;
     }
-    void InputChecker()
-    {
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            if (isGrounded)
-            {
-                isAttacking = true;
-            }
-                combocounter += 1;
-        }
-        xInput = Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f ? Input.GetAxis("Horizontal") : 0f;
-    }
+    //atack
     public bool CanJump;
-
 }

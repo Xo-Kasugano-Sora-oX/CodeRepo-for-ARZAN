@@ -1,0 +1,4 @@
+repository "ARZAN@tj_cfdyd_cryq@cloud.cn"
+  path "/"
+    br "/main"
+    co "/main"

@@ -2,11 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerAnimEvents : MonoBehaviour
+public class PlayerAnimEvents : Entity
 {
     private PlayerController player;
-    void Start()
+    protected override void Start()
+
     {
+        base.Start();
         player = GetComponentInParent<PlayerController>();
     }
     private void AnimationTrgger()
