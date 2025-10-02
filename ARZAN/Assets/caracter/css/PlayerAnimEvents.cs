@@ -2,16 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerAnimEvents : Entity
+public class PlayerAnimEvents : MonoBehaviour
 {
     private PlayerController player;
-    protected override void Start()
-
+    void Start()
     {
-        base.Start();
+
         player = GetComponentInParent<PlayerController>();
     }
-    private void AnimationTrgger()
+    private void AnimationTrigger()
     {
         player.AttackOver();
     }
