@@ -8,8 +8,10 @@ using UnityEngine.U2D;
 public class PLAYERinput : ScriptableObject, NewActions.IGamePlayerActions
 {
     NewActions inputActions;
-    public event System.Action<Vector2> Wcnmd = delegate {};
-    public event System.Action sbZhaodi = delegate {};
+    public event System.Action<Vector2> Wcnmd = delegate {};//onMove
+    public event System.Action sbZhaodi = delegate {};//onStopMove
+    public event System.Action sbzhaoDi = delegate {};//onFire
+    public event System.Action Sbzhaodi = delegate {};//onStopFire
     void OnEnable()
     {
         inputActions = new NewActions();
@@ -44,5 +46,18 @@ public class PLAYERinput : ScriptableObject, NewActions.IGamePlayerActions
         {
             sbZhaodi.Invoke();
         }
+    }
+
+    public void OnShoot(InputAction.CallbackContext context)
+    {
+        if (context.phase == InputActionPhase.Performed)
+        {
+            
+        }
+        if (context.phase == InputActionPhase.Canceled)
+        {
+            
+        }
+
     }
 }

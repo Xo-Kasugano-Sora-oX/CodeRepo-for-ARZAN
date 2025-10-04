@@ -7,19 +7,27 @@ using UnityEngine.Windows;
 public class Palyer : MonoBehaviour
 {
     [SerializeField] PLAYERinput input;
+    [SerializeField] GameObject pblt;
+    [SerializeField] Transform pgun;
     Rigidbody2D rb;
 
-    public bool FacingRight;
+    public bool FacingRight = true;
+
+    public Vector2 movespeed;
 
     private void OnEnable()
     {
         input.Wcnmd += Move;
         input.sbZhaodi += StopMove;
+        input.Sbzhaodi += StopFire;
+        input.sbzhaoDi += Fire;
     }
     private void OnDisable()
     {
         input.Wcnmd -= Move;
         input.sbZhaodi -= StopMove;
+        input.Sbzhaodi -= StopFire;
+        input.sbzhaoDi -= Fire;
     }
     private void Awake()
     {
@@ -35,11 +43,14 @@ public class Palyer : MonoBehaviour
         {
             Flip();
         }
+        
     }
+    #region Move
+
     void Move(Vector2 moveinput)
     {
-        //Vector2 moveSpeed = moveinput * 5f;
-        rb.velocity = moveinput * 5f;
+        movespeed = moveinput * 5f;
+        rb.velocity = movespeed;
     }
     void StopMove()
     {
@@ -53,5 +64,15 @@ public class Palyer : MonoBehaviour
         scale.x *= -1;
         transform.localScale = scale;
     }
+    #endregion
+    #region Fire
+    void Fire()
+    {
+        Instantiate(pblt, pgun.position ,Quaternion.identity);
+    }
+    void StopFire()
+    {
 
+    }
+    #endregion
 }
